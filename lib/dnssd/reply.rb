@@ -83,20 +83,24 @@ class DNSSD::Reply
 
   def set_fullname(fullname)
     fullname = fullname.gsub(/\\([0-9]{1,3})/) do $1.to_i.chr end
-    fullname = fullname.scan(/(?:[^\\.]|\\\.)+/).map do |part|
-      part.gsub "\\.", '.'
+    fullname = fullname.split(/(?<!\\)\./).map do |part|
+      part.gsub("\\\\", "\\").gsub("\\.", ".")
     end
 
-    @name   = fullname[0]
-    @type   = fullname[1, 2].join '.'
-    @domain = fullname[3..-1].map { |part| part.sub '.', '\\.' }.join('.') + '.'
+    name   = fullname[0]
+    type   = fullname[1, 2].join '.'
+    domain = fullname[3..-1].map { |part| part.sub '.', '\\.' }.join('.') + '.'
+
+    set_names(name, type, domain)
   end
 
   ##
   # Sets #name, #type and #domain
 
   def set_names(name, type, domain)
-    set_fullname [name, type, domain].join('.')
+    @name = name
+    @type = type
+    @domain = domain
   end
 
 end
